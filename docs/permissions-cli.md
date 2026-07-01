@@ -145,3 +145,198 @@ CLI does not expose them.
 
 The legacy backend-oriented command name `calypr-cli arborist` still works as a
 compatibility alias, but `permissions` is the supported user-facing name.
+
+## Templates
+
+### Understanding Ownership Templates
+
+Ownership templates define **what kind of resource you are creating** in the Gen3 authorization hierarchy. Rather than creating an empty node, a template tells Arborist how to initialize the resource, including its default ownership model, permissions, and inheritance behavior.
+
+Think of a template as analogous to a project template in GitHub or a class in object-oriented programming: it provides the initial structure and behavior for a new resource.
+
+---
+
+### The Resource Hierarchy
+
+Most Gen3 deployments organize resources into a hierarchy similar to:
+
+```text
+/programs
+└── Ellrott_Lab
+    └── projects
+        ├── git_drs_test
+        ├── cohort_analysis
+        └── clinical_validation
+```
+
+Templates determine what kind of node is created within this hierarchy.
+
+---
+
+### Available Templates
+
+The current CLI documentation references two ownership templates.
+
+#### `gen3-program`
+
+Creates a new **organization (program)** beneath `/programs`.
+
+Example:
+
+```bash
+calypr-cli --profile calypr permissions ownership create-descendant \
+  --parent /programs \
+  --name Ellrott_Lab \
+  --template gen3-program
+```
+
+Result:
+
+```text
+/programs
+└── Ellrott_Lab
+```
+
+Use this template when:
+
+* Creating a new organization
+* Creating a new laboratory
+* Creating a new consortium
+* Creating a new institution
+* Creating the top-level container that will own one or more projects
+
+Typically, administrators perform this operation only occasionally.
+
+---
+
+#### `gen3-project`
+
+Creates a new project beneath an existing organization.
+
+Example:
+
+```bash
+calypr-cli --profile calypr permissions ownership create-descendant \
+  --parent /programs/Ellrott_Lab/projects \
+  --name git_drs_test \
+  --template gen3-project
+```
+
+Result:
+
+```text
+/programs
+└── Ellrott_Lab
+    └── projects
+        └── git_drs_test
+```
+
+The creator automatically becomes the owner of the new project.
+
+Use this template when:
+
+* Starting a new research project
+* Creating a new data collection effort
+* Organizing files into an independent security boundary
+* Creating a project with its own collaborators and permissions
+
+This is the template most users will use.
+
+---
+
+### Choosing the Right Template
+
+| If you want to create...                                   | Use            |
+| ---------------------------------------------------------- | -------------- |
+| A new organization, laboratory, consortium, or institution | `gen3-program` |
+| A project within an existing organization                  | `gen3-project` |
+
+In most environments:
+
+* Administrators create **programs**.
+* Researchers and project administrators create **projects**.
+
+---
+
+### What Does a Template Actually Do?
+
+A template tells Arborist how to initialize a newly created resource.
+
+Although the exact implementation is deployment-specific, a template typically defines:
+
+* the resource type
+* the ownership model
+* inherited permissions
+* default access policies
+* any metadata required by the authorization system
+
+The CLI simply passes the template name to the server. The server is responsible for interpreting the template and creating the appropriate authorization resources.
+
+---
+
+### Where Are Templates Defined?
+
+Templates are **not defined by the CLI**.
+
+They are configured on the Gen3/Arborist server, meaning different deployments may provide additional templates beyond those documented here.
+
+The CLI currently documents these templates:
+
+* `gen3-program`
+* `gen3-project`
+
+Additional templates may exist depending on your deployment.
+
+---
+
+### Discovering Available Templates
+
+At present, the CLI does not provide a command to list available templates.
+
+If you need to know which templates are installed, you have several options:
+
+* consult your Gen3 administrator
+* review your deployment's Arborist configuration
+* attempt to create a resource using a template name (the server will reject unknown templates)
+
+A future version of the CLI may provide a command such as:
+
+```bash
+calypr-cli permissions ownership templates
+```
+
+to enumerate the templates available on the connected server.
+
+---
+
+### Typical Workflow
+
+Most users follow this lifecycle:
+
+1. Configure a CLI profile.
+
+   ```bash
+   calypr-cli configure ...
+   ```
+
+2. Create (or be added to) an organization.
+
+3. Create a project.
+
+   ```bash
+   calypr-cli permissions ownership create-descendant \
+       --parent /programs/Ellrott_Lab/projects \
+       --name git_drs_test \
+       --template gen3-project
+   ```
+
+4. Grant collaborators access.
+
+   ```bash
+   calypr-cli permissions access grant-user ...
+   ```
+
+5. Upload data into the project.
+
+For most researchers, **`gen3-project` is the only template they will routinely use.**
+
