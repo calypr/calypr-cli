@@ -54,6 +54,9 @@ func TestSowerClientOperations(t *testing.T) {
 					if payload.Input.Profile != "profile-a" {
 						t.Fatalf("unexpected profile: %q", payload.Input.Profile)
 					}
+					if !payload.Input.ForceLoomRefresh {
+						t.Fatal("dispatch payload omitted forceLoomRefresh")
+					}
 					return jsonResp(http.StatusOK, StatusResp{Uid: "uid-1", Name: "job-1", Status: "running"}), nil
 				case rb.Method == http.MethodGet && u.Path == sowerStatus:
 					if got := u.Query().Get("UID"); got != "uid-1" {
@@ -76,8 +79,9 @@ func TestSowerClientOperations(t *testing.T) {
 	}
 
 	status, err := client.DispatchJob(context.Background(), "dispatch", &DispatchArgs{
-		Profile:     "profile-a",
-		APIEndpoint: "https://example.org",
+		Profile:          "profile-a",
+		APIEndpoint:      "https://example.org",
+		ForceLoomRefresh: true,
 	})
 	if err != nil {
 		t.Fatalf("DispatchJob failed: %v", err)

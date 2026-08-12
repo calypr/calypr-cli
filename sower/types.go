@@ -16,15 +16,16 @@ type File struct {
 }
 
 type DispatchArgs struct {
-	Method         string `json:"method"`
-	ProjectId      string `json:"projectId"`
-	Profile        string `json:"profile"`
-	BucketName     string `json:"bucketName"`
-	APIEndpoint    string `json:"APIEndpoint"`
-	GHCommitHash   string `json:"ghCommitHash"`
-	GHPAccessToken string `json:"ghToken"`
-	GHUserName     string `json:"ghUserName"`
-	GHRepoURL      string `json:"ghRepoUrl"`
+	Method           string `json:"method"`
+	ProjectId        string `json:"projectId"`
+	Profile          string `json:"profile"`
+	BucketName       string `json:"bucketName"`
+	APIEndpoint      string `json:"APIEndpoint"`
+	GHCommitHash     string `json:"ghCommitHash"`
+	GHPAccessToken   string `json:"ghToken"`
+	GHUserName       string `json:"ghUserName"`
+	GHRepoURL        string `json:"ghRepoUrl"`
+	ForceLoomRefresh bool   `json:"forceLoomRefresh,omitempty"`
 }
 
 type JobArgs struct {
